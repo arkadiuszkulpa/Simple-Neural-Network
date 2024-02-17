@@ -64,8 +64,13 @@ print(input_vector)
 output = nn.forward_propagation(input_vector)
 print(output)
 
+# Find the index of the highest output value
+predicted_index = np.argmax(output)
 
+# Get the predicted label
+predicted_label = one_hot_labels.columns[predicted_index]
 
+print(predicted_label)
 
 
 
@@ -85,7 +90,9 @@ ax2.imshow(image_array, cmap='gray')
 ax2.set_title('Grayscale Image')
 
 ax3.bar(range(len(output)), output)
-ax3.set_title('Output')
+ax3.set_xticks(range(len(output)))
+ax3.set_xticklabels(one_hot_labels.columns, rotation='vertical')
+ax3.set_title(predicted_label)
 
 # Show the figure
 plt.show()
