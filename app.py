@@ -38,13 +38,18 @@ elif vectorize_or_load == 'no':
 labels_series = input1.prepare_labels(filenames)
 
 one_hot_labels = input1.prepare_one_hot_labels(labels_series)
-one_hot_labels['filename'] = filenames
 #print(one_hot_labels)
 
 nn = NeuralNetwork(num_inputs=784, num_hidden=128, num_outputs=9)
 nnuntrained = NeuralNetwork(num_inputs=784, num_hidden=128, num_outputs=9)
 
-nn.train_epochs(data, one_hot_labels, epochs=10, learning_rate=0.01)
+train_or_test = tk.messagebox.askquestion('train or test', 'Would you like to train (yes) the dataset or test it (no)?')
+if train_or_test == 'yes':
+    nn.train_epochs(data, one_hot_labels, epochs=10, learning_rate=0.01)
+elif train_or_test == 'no':
+    nn.load_weights()
+    nnuntrained.load_weights()
+    print('Weights loaded')
 #weights = input1.load_weights()
 
 play = True
@@ -54,7 +59,7 @@ while play == True:
 
     # Find the index of the highest output value
     predicted_index = np.argmax(output)
-
+    print(predicted_index)
     # Get the predicted label
     predicted_label = one_hot_labels.columns[predicted_index]
     print(predicted_label)

@@ -43,6 +43,12 @@ class NeuralNetwork:
         
         return output_layer_output
 
+    def load_weights(self):
+        """loads weights from a file"""
+        weights = np.load('weights_9.npy', allow_pickle=True)
+        self.weights_1 = weights.item().get('weights_1')
+        self.weights_2 = weights.item().get('weights_2')
+
     def train_epochs(self, data, one_hot_labels, epochs, learning_rate):
         """trains the model the desired number of epochs"""
         model = self

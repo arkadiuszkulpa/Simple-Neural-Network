@@ -35,7 +35,7 @@ class UserActions:
 
         # Optionally, normalize the pixel values to be between 0 and 1
         normalized_array = image_array / 255.0
-
+        self.image_array = normalized_array
         # Flatten the image to create a 784-dimensional vector
         return normalized_array.flatten()
 
