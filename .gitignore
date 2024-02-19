@@ -1,5 +1,5 @@
 # Ignore all .png files
 *.png
-
+*.npy
 # Ignore the Dataset folder
 /Dataset/
