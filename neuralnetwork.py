@@ -25,10 +25,13 @@ class NeuralNetwork:
         output_layer_output = [np.dot(neuron.weights, hidden_layer_output) + neuron.bias for neuron in self.output_layer]
 
         # Calculate error at output layer
+        target_output = np.array(target_output)
+        output_layer_output = np.array(output_layer_output)
+
         output_error = target_output - output_layer_output
 
         # Backpropagate error to hidden layer
-        hidden_error = np.dot(output_error, self.weights_2.T)
+        hidden_error = np.dot(output_error, self.weights_2)
 
         # Update weights in output layer
         for i, neuron in enumerate(self.output_layer):
@@ -37,3 +40,36 @@ class NeuralNetwork:
         # Update weights in hidden layer
         for i, neuron in enumerate(self.hidden_layer):
             neuron.weights += learning_rate * hidden_error[i] * input_vector
+
+    def train_epochs(self, data, one_hot_labels, epochs, learning_rate):
+        """trains the model the desired number of epochs"""
+        model = self
+
+        # Convert your DataFrame to a list of lists
+        one_hot_labels_list = one_hot_labels.drop(columns='filename').values.tolist()
+
+        # Now you can zip data and one_hot_labels_list together
+        training_data = list(zip(data, one_hot_labels_list))
+        print(training_data[0])
+
+        for epoch in range(epochs):
+            print(f'Epoch {epoch + 1}/{epochs}')
+            for input_vector, label in training_data:
+                model.train(input_vector, label, learning_rate)
+                print(f'Epoch {epoch + 1}/{epochs}')
+                print('---')
+                print(f'Input: {input_vector}')
+                print(f'Label: {label}')
+                print(f'Prediction: {model.forward_propagation(input_vector)}')
+                print('---')
+            print(f'Epoch {epoch + 1}/{epochs} complete')
+
+        # Gather weights from all layers into a dictionary
+        weights = {
+            'weights_1': model.weights_1,
+            'weights_2': model.weights_2
+        }
+
+        # Save weights
+        filename = f'weights_{epoch}.npy'
+        np.save(filename, weights)

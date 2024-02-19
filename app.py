@@ -1,98 +1,64 @@
 import os
 import pandas as pd
 
-from PIL import Image
 import numpy as np
 
 import tkinter as tk
-from tkinter import filedialog
-
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 
 from neuralnetwork import NeuralNetwork
 
-from draw import draw_neural_net
+from useractions import UserActions
 
-def extract_label_from_filename(filename):
-    # Assuming the label is the first part of the filename before an underscore
-    return filename.split('_')[0]
-
-# Assuming your files are in a directory called 'shapes'
-file_dir = 'Dataset'
-filenames = os.listdir(file_dir)
-
-# Extract labels from filenames
-labels = [extract_label_from_filename(filename) for filename in filenames]
-
-# Convert labels to a pandas Series
-labels_series = pd.Series(labels)
-
-# One-hot encode labels
-one_hot_labels = pd.get_dummies(labels_series)
-one_hot_labels['filename'] = filenames
+from draw import draw
 
 # Create a root window and hide it
 root = tk.Tk()
 root.withdraw()
 
-# Open the file dialog and get the path of the selected file
-file_path = filedialog.askopenfilename()
-
-original_image = Image.open(file_path)
-
-# Read and convert the image to grayscale
-image = original_image.convert('L')  # 'L' mode is for grayscale
-
-# Resize the image to 28x28 pixels
-image = image.resize((28, 28))
-
-# Convert the grayscale image to a NumPy array
-image_array = np.array(image)
-
-# Optionally, normalize the pixel values to be between 0 and 1
-normalized_array = image_array / 255.0
-
-# Flatten the image to create a 784-dimensional vector
-input_vector = normalized_array.flatten()
-
-# Now, input_vector can be used as the input to a neural network.
-
-nn = NeuralNetwork(num_inputs=784, num_hidden=128, num_outputs=10)
-
-print(input_vector)
-output = nn.forward_propagation(input_vector)
-print(output)
-
-# Find the index of the highest output value
-predicted_index = np.argmax(output)
-
-# Get the predicted label
-predicted_label = one_hot_labels.columns[predicted_index]
-
-print(predicted_label)
+input1 = UserActions()
 
 
+# Assuming your files are in a directory called 'shapes'
+file_dir = 'Dataset'
+filenames = os.listdir(file_dir)
+filepaths = [os.path.join(file_dir, filename) for filename in filenames]
+#https://data.mendeley.com/datasets/wzr2yv7r53/1
 
-# Create a grid with 2 rows and 4 columns
-gs = gridspec.GridSpec(2, 4)
+# Prepare the dataset
+vectorize_or_load = tk.messagebox.askquestion('Vectorize or load dataset', 'Would you like to vectorize (yes) the dataset or load it (no)?')
+print(vectorize_or_load)
+if vectorize_or_load == 'yes':
+    data = input1.prepare_dataset(filepaths)
+    np.save('vectorized_dataset.npy', data)
+    print('Data saved')
+elif vectorize_or_load == 'no':
+    data = np.load('vectorized_dataset.npy')
+    print('Data loaded')
 
-# Create subplots
-ax1 = plt.subplot(gs[0, 0])  # Top left
-ax2 = plt.subplot(gs[1, 0])  # Bottom left
-ax3 = plt.subplot(gs[:, 1:])  # Second column
+labels_series = input1.prepare_labels(filenames)
 
+one_hot_labels = input1.prepare_one_hot_labels(labels_series)
+one_hot_labels['filename'] = filenames
+print(one_hot_labels)
 
-ax1.imshow(original_image)
-ax1.set_title('Original Image')
+nn = NeuralNetwork(num_inputs=784, num_hidden=128, num_outputs=9)
+nnuntrained = NeuralNetwork(num_inputs=784, num_hidden=128, num_outputs=9)
 
-ax2.imshow(image_array, cmap='gray')
-ax2.set_title('Grayscale Image')
+nn.train_epochs(data, one_hot_labels, epochs=10, learning_rate=0.01)
+#weights = input1.load_weights()
 
-ax3.bar(range(len(output)), output)
-ax3.set_xticks(range(len(output)))
-ax3.set_xticklabels(one_hot_labels.columns, rotation='vertical')
-ax3.set_title(predicted_label)
+play = True
+while play == True:
+    input_vector = input1.produce_single_input()
+    output = nn.forward_propagation(input_vector)
 
-# Show the figure
-plt.show()
+    # Find the index of the highest output value
+    predicted_index = np.argmax(output)
+
+    # Get the predicted label
+    predicted_label = one_hot_labels.columns[predicted_index]
+    print(predicted_label)
+    draw(input1, output, one_hot_labels, predicted_label)
+    #play = input1.ask_user_play_again()
+
+root.destroy()
