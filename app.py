@@ -39,7 +39,7 @@ labels_series = input1.prepare_labels(filenames)
 
 one_hot_labels = input1.prepare_one_hot_labels(labels_series)
 one_hot_labels['filename'] = filenames
-print(one_hot_labels)
+#print(one_hot_labels)
 
 nn = NeuralNetwork(num_inputs=784, num_hidden=128, num_outputs=9)
 nnuntrained = NeuralNetwork(num_inputs=784, num_hidden=128, num_outputs=9)

@@ -35,11 +35,13 @@ class NeuralNetwork:
 
         # Update weights in output layer
         for i, neuron in enumerate(self.output_layer):
-            neuron.weights += learning_rate * output_error[i] * hidden_layer_output
+            neuron.weights += learning_rate * np.array(output_error[i]) * np.array(hidden_layer_output)
 
         # Update weights in hidden layer
         for i, neuron in enumerate(self.hidden_layer):
             neuron.weights += learning_rate * hidden_error[i] * input_vector
+        
+        return output_layer_output
 
     def train_epochs(self, data, one_hot_labels, epochs, learning_rate):
         """trains the model the desired number of epochs"""
@@ -50,26 +52,25 @@ class NeuralNetwork:
 
         # Now you can zip data and one_hot_labels_list together
         training_data = list(zip(data, one_hot_labels_list))
-        print(training_data[0])
 
         for epoch in range(epochs):
+            correct_predictions = 0
             print(f'Epoch {epoch + 1}/{epochs}')
             for input_vector, label in training_data:
-                model.train(input_vector, label, learning_rate)
-                print(f'Epoch {epoch + 1}/{epochs}')
-                print('---')
-                print(f'Input: {input_vector}')
-                print(f'Label: {label}')
-                print(f'Prediction: {model.forward_propagation(input_vector)}')
-                print('---')
+                prediction = model.train(input_vector, label, learning_rate)
+                if np.argmax(prediction) == np.argmax(label):
+                    correct_predictions += 1
+            accuracy = correct_predictions / len(training_data)
+            #print(f'Accuracy: {accuracy * 100:.2f}%')
+            print(f'Accuracy after epoch {epoch + 1}: {accuracy * 100}%')
             print(f'Epoch {epoch + 1}/{epochs} complete')
 
-        # Gather weights from all layers into a dictionary
-        weights = {
-            'weights_1': model.weights_1,
-            'weights_2': model.weights_2
-        }
+            # Gather weights from all layers into a dictionary
+            weights = {
+                'weights_1': model.weights_1,
+                'weights_2': model.weights_2
+            }
 
-        # Save weights
-        filename = f'weights_{epoch}.npy'
-        np.save(filename, weights)
+            # Save weights
+            filename = f'weights_{epoch}.npy'
+            np.save(filename, weights)
